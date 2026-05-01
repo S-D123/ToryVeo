@@ -1,0 +1,11 @@
+{
+  "prompt": {
+    "6": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "{{PROMPT}}",
+        "clip": ["1", 0]
+      }
+    }
+  }
+}
