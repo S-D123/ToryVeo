@@ -17,7 +17,7 @@ The input has to be a story. The story is given to Ollama, which breaks the whol
 2. Install dependencies from `requirements.txt`.
 3. Copy `.env.example` to `.env` and fill in your API keys.
 4. Provide a ComfyUI workflow JSON at `workflows/comfyui_workflow.json`.
-Note: You do require Ollama, Flux Model, and TTS Model to run locally
+Note: You do require Ollama, Flux Model, and TTS Model to run locally. Also, I have used phi3:mini, but can use any other models
 
 ## Usage (so far)
 - Place your story in `story.txt` at the repo root.
