@@ -60,6 +60,6 @@ Note: You do require Ollama, Flux Model, and TTS Model to run locally. Also, I h
 - **Outputs:** `final_story.mp4` (configurable via `VIDEO_OUTPUT`).
 - **Ken Burns behavior:** Gentle zoom from `VIDEO_ZOOM_START` to `VIDEO_ZOOM_END` with a small alternating pan per scene.
 
-### Phase 4 requirements
+### Phase 4 requirements(This may not work properly, as this feature is being worked on)
 - **FFmpeg:** MoviePy requires FFmpeg on your PATH. Install FFmpeg separately and verify it is available.
 - **Python:** Use Python 3.10.13 for best wheel support on Windows.
