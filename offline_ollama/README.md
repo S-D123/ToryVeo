@@ -14,13 +14,13 @@ Ollama’s installer and model files are large binaries and must be downloaded f
 
 ## Download models for offline use
 1. With internet access on the same machine (or temporarily connected), pull the model you plan to use:
-   - Example: `ollama pull llama3.1`
+   - Example: `ollama pull phi3:mini`
 2. Once the model is pulled, Ollama can run it offline.
 
 ## Configure `StoryBreakdown`
 Update your `.env` to point to the local Ollama CLI:
 ```
-OLLAMA_MODEL=llama3.1
+OLLAMA_MODEL=phi3:mini
 OLLAMA_CLI_PATH=ollama
 OLLAMA_TEMPERATURE=0.2
 ```
@@ -34,5 +34,5 @@ Run the pipeline phase 1 to verify:
 ## Optional: Custom Ollama install path
 If `ollama` is not in PATH, set a full path:
 ```
-OLLAMA_CLI_PATH=C:\Program Files\Ollama\ollama.exe
+OLLAMA_CLI_PATH=C:\...\Ollama\ollama.exe
 ```
