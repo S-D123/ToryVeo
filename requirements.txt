@@ -5,3 +5,4 @@ openai==1.35.14
 moviepy==2.2.1
 Pillow==11.3.0
 numpy==2.4.4
+rich==15.0.0

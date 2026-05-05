@@ -1,9 +1,9 @@
 # Offline Ollama setup for StoryBreakdown
 
-This folder contains guidance for installing and configuring Ollama locally for offline story breakdowns.
+This file contains guidance for installing and configuring Ollama locally for offline story breakdowns.
 
 ## Why this is manual
-Ollama’s installer and model files are large binaries and must be downloaded from Ollama’s official distribution. I can’t download external files directly from here, so follow the steps below on the machine where you’ll run the pipeline.
+Ollama’s installer and model files are large binaries and must be downloaded from Ollama’s official distribution.
 
 ## Windows installation (offline-friendly)
 1. On a machine with internet access, download the latest Ollama Windows installer from:

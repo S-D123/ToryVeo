@@ -5,6 +5,8 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+import urllib
+from src.utils.cli import spinner_status
 
 import requests
 
@@ -17,7 +19,7 @@ class ComfyUIClient:
     workflow_path: Path
     prompt_node_id: str
     seed: int = 1234
-    timeout_seconds: int = 120
+    timeout_seconds: int = 45
     poll_interval: float = 1.5
     session: requests.Session = field(default_factory=requests.Session)
 
@@ -26,19 +28,27 @@ class ComfyUIClient:
         workflow = self._inject_prompt(workflow, image_prompt)
         workflow = self._inject_seed(workflow)
 
-        response = self.session.post(
-            f"{self.base_url}/prompt",
-            json={"prompt": workflow},
-            timeout=self.timeout_seconds,
-        )
-        response.raise_for_status()
-        prompt_id = response.json().get("prompt_id")
-        if not prompt_id:
-            raise RuntimeError("ComfyUI did not return a prompt_id")
+        # updated code(instead of using session.post)
+        try:
+            response = urllib.request.Request(
+                f"{self.base_url}/prompt",
+                method="POST",
+                headers={"Content-Type": "application/json"},
+                data=json.dumps(workflow).encode('utf-8')
+            )
 
-        image_info = self._wait_for_image(prompt_id)
-        image_bytes = self._download_image(image_info)
-        output_path.write_bytes(image_bytes)
+            with urllib.request.urlopen(response) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                prompt_id = res_data["prompt_id"]
+                if not prompt_id:
+                    raise RuntimeError("ComfyUI did not return a prompt_id")
+
+                image_info = self._wait_for_image(prompt_id)
+                image_bytes = self._download_image(image_info)
+                output_path.write_bytes(image_bytes)
+
+        except Exception as e:
+            print("Exception:", e)
 
     def _load_workflow(self) -> dict[str, Any]:
         if not self.workflow_path.exists():
@@ -99,6 +109,11 @@ def generate_images(
     generated: list[Path] = []
     for scene in scenes:
         output_path = output_dir / f"scene_{scene.scene_number}.png"
-        client.generate_image(scene.image_prompt, output_path)
-        generated.append(output_path)
+
+        # generate an image only if the image is not already created
+        if not Path.is_file(output_path):
+            with spinner_status(f"Generating image for scene {scene.scene_number}") as status:
+                client.generate_image(scene.image_prompt, output_path)
+                generated.append(output_path)
+                status.update("")
     return generated

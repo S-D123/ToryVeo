@@ -19,9 +19,7 @@ class Settings:
     elevenlabs_api_key: str | None
     elevenlabs_voice_id: str | None
     elevenlabs_model_id: str
-    openai_api_key: str | None
-    openai_tts_model: str
-    openai_tts_voice: str
+    piper_path: str
     output_dir: Path
     video_resolution: tuple[int, int]
     video_fps: int
@@ -90,9 +88,7 @@ def load_settings() -> Settings:
         elevenlabs_api_key=os.getenv("ELEVENLABS_API_KEY"),
         elevenlabs_voice_id=os.getenv("ELEVENLABS_VOICE_ID"),
         elevenlabs_model_id=os.getenv("ELEVENLABS_MODEL_ID", "eleven_multilingual_v2"),
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        openai_tts_model=os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts"),
-        openai_tts_voice=os.getenv("OPENAI_TTS_VOICE", "alloy"),
+        piper_path=os.getenv("PIPER_PATH", "piper_path_is_empty"),
         output_dir=output_dir,
         video_resolution=_get_env_resolution("VIDEO_RESOLUTION", (1920, 1080)),
         video_fps=_get_env_int("VIDEO_FPS", 24),

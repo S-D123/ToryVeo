@@ -11,8 +11,8 @@ from pydantic import ValidationError
 from ..clients.llm_client import LLMClient
 from ..models import Scene
 
+# tag for image scene
 DEFAULT_STYLE_TAG = "watercolor children's book illustration"
-
 
 @dataclass
 class StoryBreakdownResult:
@@ -67,12 +67,14 @@ class StoryBreakdown:
             except ValidationError as exc:
                 raise ValueError(f"Invalid scene entry: {exc}") from exc
 
+            # for adding DEFAULT_STYLE_TAG
             scene = scene.copy(update={"image_prompt": self._append_style(scene.image_prompt)})
             scenes.append(scene)
 
         self._validate_scene_numbers(scenes)
         return scenes
 
+    # DEFAULT_STYLE_TAG added here
     def _append_style(self, prompt: str) -> str:
         if self.style_tag.lower() in prompt.lower():
             return prompt
@@ -86,7 +88,7 @@ class StoryBreakdown:
         return match.group(0)
 
     def _sanitize_json(self, json_text: str) -> str:
-        # Remove ASCII control characters that break JSON parsing.
+        # Remove ASCII control characters(NUL, Unit separator, DEL) that break JSON parsing.
         return re.sub(r"[\x00-\x1F\x7F]", "", json_text)
 
     def _validate_scene_numbers(self, scenes: Iterable[Scene]) -> None:

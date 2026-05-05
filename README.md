@@ -1,10 +1,10 @@
 # Story-to-Video Content Pipeline
 
-ToryVeo is a pipeline that can be used to generate animated videos for kids from a story.
+ToryVeo is a pipeline that can be used to generate animated videos for kids from a text story.
 
 ## How it works
 
-The input has to be a story. The story is given to Ollama, which breaks the whole story into scenes. The scenes are given to StableDiffusion/Flux Models to generate an image for the scene. The scenes are then given to TTS(Text-to-Speech) engine like piper for narration. Lastly, all the scenes are combined using moviepy/FFMPEG.
+The input has to be a story in plain text. The story is given to Ollama, which breaks the whole story into scenes. The scenes are given to Image Generating Models using comfyUI to generate an image for the scene. The scenes are then given to TTS(Text-to-Speech) engine like piper for narration. Lastly, all the scenes are combined using moviepy.
 
 ## What's included
 - Phase 1: Story breakdown into structured JSON using Ollama CLI.
@@ -17,49 +17,21 @@ The input has to be a story. The story is given to Ollama, which breaks the whol
 2. Install dependencies from `requirements.txt`.
 3. Copy `.env.example` to `.env` and fill in your API keys.
 4. Provide a ComfyUI workflow JSON at `workflows/comfyui_workflow.json`.
-Note: You do require Ollama, Flux Model, and TTS Model to run locally. Also, I have used phi3:mini, but can use any other models
+
+> **Local Dependencies**
+> 
+> This pipeline requires the following services running locally, so choose models according to your hardware specifications (VRAM, RAM, CPU cores):
+> - **Ollama** – for story breakdown (any model, e.g., `mistral`, `neural-chat`)
+> - **ComfyUI** – for image generation (with a compatible SD model checkpoint)
+> - **TTS Model** – for voiceover generation (e.g., Piper or ElevenLabs API key)
+> 
+> **If image generation fails:**
+> Image generation is computationally expensive and may consume significant RAM and VRAM. It may Throw `CUDA out of memory` or runtime exceptions and can cause system slowdowns or crashes. To prevent that, I would suggest:
+>
+> 1. Reduce resolution in `workflows/comfyui_workflow.json` (e.g., `512x512` → `256x256`)
+> 2. Restart ComfyUI with memory optimization: `python main.py --lowram --cache-none`
+> 3. Reduce steps for Ksmapler node. Suggested: 20-30, but you may reduce it.
 
 ## Usage (so far)
 - Place your story in `story.txt` at the repo root.
 - Run `pipeline.py` to execute phases 1–3.
-
-## Module documentation
-### `src/phases/story_breakdown.py` (Phase 1)
-- **Purpose:** Converts raw story text into structured scene data using an LLM.
-- **Key class:** `StoryBreakdown`.
-- **Inputs:** Raw story text string.
-- **Outputs:** JSON array saved to `assets/story_scenes.json` with fields:
-	- `scene_number` (int)
-	- `narration` (string)
-	- `image_prompt` (string, always appended with the style tag)
-- **LLM client:** `OllamaCliClient` in `src/clients/ollama_cli.py` (swappable via `LLMClient` protocol).
-- **Validation:** Ensures JSON array structure and sequential scene numbering.
-
-### `src/phases/image_generation.py` (Phase 2)
-- **Purpose:** Generates images for each scene using a ComfyUI API.
-- **Key class:** `ComfyUIClient`.
-- **Inputs:** `Scene.image_prompt` and a ComfyUI workflow JSON.
-- **Outputs:** Sequential PNG images (`assets/scene_#.png`).
-- **Notes:** Uses `COMFYUI_PROMPT_NODE_ID` to locate the prompt node in the workflow and updates `seed` inputs when present.
-
-### `src/phases/voiceover_generation.py` (Phase 3)
-- **Purpose:** Generates voiceover audio for each scene.
-- **Key class:** `VoiceoverGenerator`.
-- **Primary provider:** ElevenLabs (requires `ELEVENLABS_API_KEY` + `ELEVENLABS_VOICE_ID`).
-- **Fallback:** OpenAI TTS if ElevenLabs isn’t configured.
-- **Outputs:** Sequential MP3 files (`assets/scene_#.mp3`).
-
-### `pipeline.py`
-- **Purpose:** Orchestrates phases 1–4 end-to-end.
-- **Flow:** Reads `story.txt` → generates `story_scenes.json` → generates images → generates audio → renders video.
-
-### `src/phases/video_assembly.py` (Phase 4)
-- **Purpose:** Builds the final MP4 using MoviePy with a Ken Burns effect.
-- **Key functions:** `assemble_video`, `make_ken_burns_clip`.
-- **Inputs:** `assets/scene_#.png` + `assets/scene_#.mp3`.
-- **Outputs:** `final_story.mp4` (configurable via `VIDEO_OUTPUT`).
-- **Ken Burns behavior:** Gentle zoom from `VIDEO_ZOOM_START` to `VIDEO_ZOOM_END` with a small alternating pan per scene.
-
-### Phase 4 requirements(This may not work properly, as this feature is being worked on)
-- **FFmpeg:** MoviePy requires FFmpeg on your PATH. Install FFmpeg separately and verify it is available.
-- **Python:** Use Python 3.10.13 for best wheel support on Windows.

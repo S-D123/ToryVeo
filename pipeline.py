@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from rich.console import Console
+
 from src.clients.ollama_cli import OllamaCliClient
 from src.config import ensure_output_dir, load_settings
 from src.models import Scene
 from src.phases.image_generation import ComfyUIClient, generate_images
-from src.phases.story_breakdown import StoryBreakdown
+from src.phases.story_breakdown import StoryBreakdown, StoryBreakdownResult
 from src.phases.video_assembly import VideoSettings, assemble_video
 from src.phases.voiceover_generation import VoiceoverGenerator, generate_voiceovers
 
@@ -16,15 +18,33 @@ def run_phase1(story_path: Path, output_path: Path) -> list[Scene]:
     settings = load_settings()
     ensure_output_dir(settings.output_dir)
 
+    # added later
+    if Path.is_file(output_path): 
+        print("story_scenes.json file already present")
+        return load_scenes(output_path)
+
     story_text = story_path.read_text(encoding="utf-8")
+
     client = OllamaCliClient(
         model=settings.ollama_model,
         cli_path=settings.ollama_cli_path,
         temperature=settings.ollama_temperature,
     )
     breaker = StoryBreakdown(llm_client=client)
-    result = breaker.run(story_text)
-    breaker.save(result, output_path)
+
+    # just for cli viz
+    console = Console()
+    with console.status(
+        "[bold green]Breaking story into scenes",
+        spinner="dots",
+        spinner_style="status.spinner",
+        speed=1.0
+    ) as status:
+    # cli viz ends
+        result = breaker.run(story_text)
+        status.update("Saving scene")
+        breaker.save(result, output_path)
+        
     return result.scenes
 
 
@@ -54,9 +74,7 @@ def run_phase3(scenes: list[Scene]) -> list[Path]:
         elevenlabs_api_key=settings.elevenlabs_api_key,
         elevenlabs_voice_id=settings.elevenlabs_voice_id,
         elevenlabs_model_id=settings.elevenlabs_model_id,
-        openai_api_key=settings.openai_api_key,
-        openai_tts_model=settings.openai_tts_model,
-        openai_tts_voice=settings.openai_tts_voice,
+        piper_path=settings.piper_path
     )
     return generate_voiceovers(scenes, generator, settings.output_dir)
 

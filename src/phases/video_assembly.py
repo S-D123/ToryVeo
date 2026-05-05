@@ -45,7 +45,7 @@ def assemble_video(
             zoom_end=settings.zoom_end,
             pan_start=pan_start,
             pan_end=pan_end,
-        ).set_audio(audio_clip)
+        ).with_audio(audio_clip)
         clips.append(clip)
 
     final_clip = concatenate_videoclips(clips, method="compose")
